@@ -1,0 +1,6 @@
+{
+  "name": "Noor",
+  "description": "Islamic reminder mobile app featuring prayer time alerts, daily verse reflections, daily obligations tracker for prayers, fasting, and Quran, streaks, badges, and weekly visual reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

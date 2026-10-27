@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'displayName', 'email', 'createdAt', 'updatedAt'])
+        && data.userId == request.auth.uid
+        && data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 100
+        && data.email is string && data.email.size() > 0 && data.email.size() <= 150
+        && data.createdAt is timestamp && data.createdAt <= request.time
+        && data.updatedAt is timestamp && data.updatedAt <= request.time
+        && (!('city' in data) || (data.city is string && data.city.size() <= 100))
+        && (!('calculationMethod' in data) || (data.calculationMethod is string && data.calculationMethod.size() <= 100))
+        && (!('currentStreak' in data) || (data.currentStreak is int && data.currentStreak >= 0))
+        && (!('longestStreak' in data) || (data.longestStreak is int && data.longestStreak >= 0))
+        && (!('lastActiveDate' in data) || (data.lastActiveDate is string && data.lastActiveDate.size() <= 20));
+    }
+
+    function isValidDailyLog(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'date', 'createdAt', 'updatedAt'])
+        && data.userId == userId
+        && data.userId == request.auth.uid
+        && data.date is string && data.date.size() == 10
+        && data.createdAt is timestamp && data.createdAt <= request.time
+        && data.updatedAt is timestamp && data.updatedAt <= request.time
+        && (!('fajr' in data) || data.fajr is bool)
+        && (!('dhuhr' in data) || data.dhuhr is bool)
+        && (!('asr' in data) || data.asr is bool)
+        && (!('maghrib' in data) || data.maghrib is bool)
+        && (!('isha' in data) || data.isha is bool)
+        && (!('sunnahPrayers' in data) || (data.sunnahPrayers is int && data.sunnahPrayers >= 0))
+        && (!('isFasting' in data) || data.isFasting is bool)
+        && (!('fastingType' in data) || (data.fastingType is string && data.fastingType.size() <= 50))
+        && (!('quranPagesRead' in data) || (data.quranPagesRead is int && data.quranPagesRead >= 0))
+        && (!('quranMinutes' in data) || (data.quranMinutes is int && data.quranMinutes >= 0))
+        && (!('lastSurah' in data) || (data.lastSurah is string && data.lastSurah.size() <= 100))
+        && (!('lastAyah' in data) || (data.lastAyah is int && data.lastAyah >= 0));
+    }
+
+    function isValidBadge(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'badgeKey', 'title', 'description', 'unlockedAt'])
+        && data.userId == userId
+        && data.userId == request.auth.uid
+        && data.badgeKey is string && data.badgeKey.size() > 0 && data.badgeKey.size() <= 50
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 100
+        && data.description is string && data.description.size() <= 300
+        && data.unlockedAt is timestamp && data.unlockedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data)
+                    && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(userId);
+
+      match /daily_logs/{dateStr} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidDailyLog(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidDailyLog(request.resource.data, userId)
+                      && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isOwner(userId);
+      }
+
+      match /badges/{badgeId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidBadge(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidBadge(request.resource.data, userId)
+                      && request.resource.data.unlockedAt == resource.data.unlockedAt;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

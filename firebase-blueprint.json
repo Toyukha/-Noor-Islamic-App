@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with streak counters and preferences.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The Firebase Auth UID of the user." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "email": { "type": "string", "description": "The user's email address." },
+        "city": { "type": "string", "description": "Selected city for prayer times." },
+        "calculationMethod": { "type": "string", "description": "Selected calculation convention." },
+        "currentStreak": { "type": "integer", "description": "Consecutive active days." },
+        "longestStreak": { "type": "integer", "description": "Longest active streak achieved." },
+        "lastActiveDate": { "type": "string", "description": "Date of last tracked obligation in YYYY-MM-DD." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account profile creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last profile update timestamp." }
+      },
+      "required": ["userId", "displayName", "email", "createdAt", "updatedAt"]
+    },
+    "DailyLog": {
+      "title": "DailyLog",
+      "description": "Daily spiritual obligations tracker record for prayers, fasting, and Quran recitation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID, matching the date in YYYY-MM-DD." },
+        "userId": { "type": "string", "description": "The Firebase Auth UID of the owner." },
+        "date": { "type": "string", "description": "Date string in YYYY-MM-DD format." },
+        "fajr": { "type": "boolean", "description": "Fajr prayer completed." },
+        "dhuhr": { "type": "boolean", "description": "Dhuhr prayer completed." },
+        "asr": { "type": "boolean", "description": "Asr prayer completed." },
+        "maghrib": { "type": "boolean", "description": "Maghrib prayer completed." },
+        "isha": { "type": "boolean", "description": "Isha prayer completed." },
+        "sunnahPrayers": { "type": "integer", "description": "Count of voluntary/sunnah rak'ahs performed." },
+        "isFasting": { "type": "boolean", "description": "Whether user fasted on this day." },
+        "fastingType": { "type": "string", "description": "Reason or category of fast (e.g. Ramadan, Sunnah, Qada)." },
+        "quranPagesRead": { "type": "integer", "description": "Number of Quran pages recited today." },
+        "quranMinutes": { "type": "integer", "description": "Minutes spent reciting Quran." },
+        "lastSurah": { "type": "string", "description": "Last read Surah name or number." },
+        "lastAyah": { "type": "integer", "description": "Last read Ayah number bookmark." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last modified timestamp." }
+      },
+      "required": ["id", "userId", "date", "createdAt", "updatedAt"]
+    },
+    "Badge": {
+      "title": "Badge",
+      "description": "Milestone achievement badge earned by the user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique badge identifier." },
+        "userId": { "type": "string", "description": "The Firebase Auth UID of the earner." },
+        "badgeKey": { "type": "string", "description": "Unique key identifier for the badge type." },
+        "title": { "type": "string", "description": "User-facing title of the badge." },
+        "description": { "type": "string", "description": "Explanation of how the badge was unlocked." },
+        "unlockedAt": { "type": "string", "format": "date-time", "description": "Timestamp when badge was unlocked." }
+      },
+      "required": ["id", "userId", "badgeKey", "title", "description", "unlockedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores user profiles with streak information and settings."
+    },
+    "/users/{userId}/daily_logs/{dateStr}": {
+      "schema": { "$ref": "#/entities/DailyLog" },
+      "description": "Stores daily prayer, fasting, and Quran obligation records per user."
+    },
+    "/users/{userId}/badges/{badgeId}": {
+      "schema": { "$ref": "#/entities/Badge" },
+      "description": "Stores unlocked spiritual milestone badges per user."
+    }
+  }
+}
