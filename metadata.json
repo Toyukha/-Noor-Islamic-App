@@ -1,6 +1,6 @@
 {
   "name": "Noor",
-  "description": "Islamic reminder mobile app featuring prayer time alerts, daily verse reflections, daily obligations tracker for prayers, fasting, and Quran, streaks, badges, and weekly visual reports.",
+  "description": "Comprehensive Islamic spiritual companion featuring 100% offline Adhan and auto-play Surah recitations (Friday Al-Kahf & Nightly Al-Mulk/Al-Waqi'ah), Morning & Evening Adhkar reminder notifications and daily tracker, worldwide 150+ cities directory with GPS auto-detection, 7-day Solah & Quran consistency charts, Khatm pacing, Tadabbur social sharing, and PDF/CSV data exports.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -10,11 +10,13 @@ import com.example.data.model.DayPrayerSchedule
 import com.example.data.model.PrayerName
 import com.example.data.model.SinglePrayerTime
 import com.example.data.repository.NoorRepository
+import com.example.notification.AlarmPreferences
 import com.example.ui.components.AlertType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -33,12 +35,16 @@ class ObligationsViewModelTest : FirestoreEmulatorTestBase() {
     database = Room.inMemoryDatabaseBuilder(context, NoorDatabase::class.java)
       .allowMainThreadQueries()
       .build()
-    repository = NoorRepository(firestore, database)
+    if (isFirestoreInitialized()) {
+      repository = NoorRepository(firestore, database)
+    }
   }
 
   @After
   fun cleanupDb() {
-    database.close()
+    if (::database.isInitialized) {
+      database.close()
+    }
   }
 
   @Test
@@ -104,5 +110,44 @@ class ObligationsViewModelTest : FirestoreEmulatorTestBase() {
     // Toggling Asr should dismiss the alert
     viewModel.togglePrayer(PrayerName.ASR)
     assertNull(viewModel.uiState.value.activeInAppAlert)
+  }
+
+  @Test
+  fun syncTodayRollover_advancesSelectedDateOnlyWhenViewingPreviousToday() = runBlocking {
+    signInTestUser("test_rollover_vm@example.com")
+    val viewModel = ObligationsViewModel(repository)
+
+    // User is viewing yesterday ("2026-10-26") as current today; midnight advances to "2026-10-27"
+    viewModel.selectDate("2026-10-26")
+    viewModel.syncTodayRollover(newTodayDateStr = "2026-10-27", previousTodayDateStr = "2026-10-26")
+    assertEquals("2026-10-27", viewModel.uiState.value.selectedDate)
+
+    // If user intentionally browsed back to an earlier date ("2026-10-20"), rollover leaves it alone
+    viewModel.selectDate("2026-10-20")
+    viewModel.syncTodayRollover(newTodayDateStr = "2026-10-28", previousTodayDateStr = "2026-10-27")
+    assertEquals("2026-10-20", viewModel.uiState.value.selectedDate)
+  }
+
+  @Test
+  fun toggleNotificationPreferences_persistsToAlarmPreferencesAndState() = runBlocking {
+    signInTestUser("test_prefs_vm@example.com")
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val viewModel = ObligationsViewModel(repository)
+
+    viewModel.togglePrayerPreWarning(context, false)
+    viewModel.togglePrayerAlerts(context, false)
+    viewModel.toggleFastingAlerts(context, false)
+    viewModel.toggleVerseAlerts(context, false)
+
+    val state = viewModel.uiState.value
+    assertFalse(state.prayerPreWarningEnabled)
+    assertFalse(state.prayerAlertsEnabled)
+    assertFalse(state.fastingAlertsEnabled)
+    assertFalse(state.verseAlertsEnabled)
+
+    assertFalse(AlarmPreferences.isPrayerPreWarningEnabled(context))
+    assertFalse(AlarmPreferences.isPrayerAlertsEnabled(context))
+    assertFalse(AlarmPreferences.isFastingAlertsEnabled(context))
+    assertFalse(AlarmPreferences.isVerseAlertsEnabled(context))
   }
 }

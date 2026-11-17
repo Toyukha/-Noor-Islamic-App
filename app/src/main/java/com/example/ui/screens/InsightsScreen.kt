@@ -130,6 +130,14 @@ fun InsightsScreen(
     }
 
     item {
+      // Interactive 7-Day Consistency Visualization (Solah & Quran with Day Tooltips)
+      com.example.ui.components.WeeklyConsistencyChart(
+        weeklyLogs = weeklyLogs,
+        modifier = Modifier.fillMaxWidth()
+      )
+    }
+
+    item {
       // Weekly Prayer Adherence Bar Chart Card
       WeeklyPrayerChartCard(weeklyLogs = weeklyLogs)
     }
@@ -278,7 +286,7 @@ fun WeeklyPrayerChartCard(weeklyLogs: List<DailyLog>) {
   // Map recent logs or fill blanks
   val prayerCounts = (0..6).map { idx ->
     val log = weeklyLogs.getOrNull(idx)
-    log?.completedPrayersCount ?: (3 + (idx % 3)) // realistic demo fallback if new account
+    log?.completedPrayersCount ?: 0
   }
 
   val primaryColor = MaterialTheme.colorScheme.primary
@@ -378,7 +386,7 @@ fun WeeklyQuranChartCard(weeklyLogs: List<DailyLog>) {
   val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
   val pageCounts = (0..6).map { idx ->
     val log = weeklyLogs.getOrNull(idx)
-    log?.quranPagesRead ?: (idx * 2)
+    log?.quranPagesRead ?: 0
   }
 
   val maxPages = (pageCounts.maxOrNull() ?: 10).coerceAtLeast(10).toFloat()

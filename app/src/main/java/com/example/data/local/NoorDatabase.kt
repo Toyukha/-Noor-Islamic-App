@@ -6,8 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-  entities = [DailyObligationEntity::class, QuranProgressEntity::class, VerseReflectionEntity::class],
-  version = 2,
+  entities = [DailyObligationEntity::class, QuranProgressEntity::class, VerseReflectionEntity::class, BadgeEntity::class],
+  version = 6,
   exportSchema = false
 )
 abstract class NoorDatabase : RoomDatabase() {
@@ -15,6 +15,7 @@ abstract class NoorDatabase : RoomDatabase() {
   abstract fun dailyObligationDao(): DailyObligationDao
   abstract fun quranProgressDao(): QuranProgressDao
   abstract fun verseReflectionDao(): VerseReflectionDao
+  abstract fun badgeDao(): BadgeDao
 
   companion object {
     @Volatile

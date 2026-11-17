@@ -38,6 +38,11 @@
         "quranMinutes": { "type": "integer", "description": "Minutes spent reciting Quran." },
         "lastSurah": { "type": "string", "description": "Last read Surah name or number." },
         "lastAyah": { "type": "integer", "description": "Last read Ayah number bookmark." },
+        "morningAdhkar": { "type": "boolean", "description": "Morning remembrance completed." },
+        "eveningAdhkar": { "type": "boolean", "description": "Evening remembrance completed." },
+        "taraweehRakats": { "type": "integer", "description": "Count of Taraweeh prayer Rak'ahs performed." },
+        "laylatAlQadrVigil": { "type": "boolean", "description": "Night vigil and Qiyam for Laylat al-Qadr." },
+        "sadaqahGiven": { "type": "boolean", "description": "Daily voluntary charity given during Ramadan." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
         "updatedAt": { "type": "string", "format": "date-time", "description": "Last modified timestamp." }
       },

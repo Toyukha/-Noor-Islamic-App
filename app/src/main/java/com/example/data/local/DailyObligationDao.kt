@@ -18,6 +18,9 @@ interface DailyObligationDao {
   @Query("SELECT * FROM daily_obligations WHERE userId = :userId AND date >= :startDate ORDER BY date ASC")
   fun getWeeklyObligations(userId: String, startDate: String): Flow<List<DailyObligationEntity>>
 
+  @Query("SELECT * FROM daily_obligations WHERE userId = :userId ORDER BY date ASC")
+  suspend fun getAllObligationsDirect(userId: String): List<DailyObligationEntity>
+
   @Query("SELECT * FROM daily_obligations WHERE syncPending = 1")
   suspend fun getPendingSyncObligations(): List<DailyObligationEntity>
 

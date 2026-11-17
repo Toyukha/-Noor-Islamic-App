@@ -37,12 +37,21 @@ service cloud.firestore {
         && (!('maghrib' in data) || data.maghrib is bool)
         && (!('isha' in data) || data.isha is bool)
         && (!('sunnahPrayers' in data) || (data.sunnahPrayers is int && data.sunnahPrayers >= 0))
+        && (!('tahajjud' in data) || data.tahajjud is bool)
+        && (!('duha' in data) || data.duha is bool)
+        && (!('witr' in data) || data.witr is bool)
+        && (!('rawatibCount' in data) || (data.rawatibCount is int && data.rawatibCount >= 0))
         && (!('isFasting' in data) || data.isFasting is bool)
         && (!('fastingType' in data) || (data.fastingType is string && data.fastingType.size() <= 50))
         && (!('quranPagesRead' in data) || (data.quranPagesRead is int && data.quranPagesRead >= 0))
         && (!('quranMinutes' in data) || (data.quranMinutes is int && data.quranMinutes >= 0))
         && (!('lastSurah' in data) || (data.lastSurah is string && data.lastSurah.size() <= 100))
-        && (!('lastAyah' in data) || (data.lastAyah is int && data.lastAyah >= 0));
+        && (!('lastAyah' in data) || (data.lastAyah is int && data.lastAyah >= 0))
+        && (!('morningAdhkar' in data) || data.morningAdhkar is bool)
+        && (!('eveningAdhkar' in data) || data.eveningAdhkar is bool)
+        && (!('taraweehRakats' in data) || (data.taraweehRakats is int && data.taraweehRakats >= 0))
+        && (!('laylatAlQadrVigil' in data) || data.laylatAlQadrVigil is bool)
+        && (!('sadaqahGiven' in data) || data.sadaqahGiven is bool);
     }
 
     function isValidBadge(data, userId) {

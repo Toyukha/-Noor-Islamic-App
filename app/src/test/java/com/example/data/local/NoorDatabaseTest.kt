@@ -52,6 +52,8 @@ class NoorDatabaseTest {
       isFasting = true,
       fastingType = "Sunnah",
       quranPagesRead = 8,
+      morningAdhkarDone = true,
+      eveningAdhkarDone = true,
       syncPending = true
     )
 
@@ -63,6 +65,8 @@ class NoorDatabaseTest {
     assertEquals("2026-10-27", retrieved?.date)
     assertTrue(retrieved?.fajr == true)
     assertTrue(retrieved?.isFasting == true)
+    assertTrue(retrieved?.morningAdhkarDone == true)
+    assertTrue(retrieved?.eveningAdhkarDone == true)
     assertEquals(8, retrieved?.quranPagesRead)
     assertTrue(retrieved?.syncPending == true)
 
@@ -70,6 +74,40 @@ class NoorDatabaseTest {
     obligationDao.markAsSynced(entity.id)
     val afterSync = obligationDao.getDailyObligationDirect("test_user", "2026-10-27")
     assertEquals(false, afterSync?.syncPending)
+  }
+
+  @Test
+  fun insertAndRetrieveObligationWithAllFields() = runBlocking {
+    val ramadanEntity = DailyObligationEntity(
+      id = "ramadan_test_1",
+      userId = "user_ramadan",
+      date = "2026-03-15",
+      fajr = true,
+      dhuhr = true,
+      asr = true,
+      maghrib = true,
+      isha = true,
+      isFasting = true,
+      fastingType = "Ramadan",
+      taraweehRakats = 20,
+      laylatAlQadrVigil = true,
+      sadaqahGiven = true
+    )
+
+    obligationDao.insertOrUpdate(ramadanEntity)
+
+    val retrieved = obligationDao.getDailyObligation("user_ramadan", "2026-03-15").first()
+    assertNotNull(retrieved)
+    assertEquals(20, retrieved?.taraweehRakats)
+    assertTrue(retrieved?.laylatAlQadrVigil == true)
+    assertTrue(retrieved?.sadaqahGiven == true)
+
+    // Test conversion to DailyLog
+    val log = retrieved?.toDailyLog()
+    assertNotNull(log)
+    assertEquals(20, log?.taraweehRakats)
+    assertTrue(log?.laylatAlQadrVigil == true)
+    assertTrue(log?.sadaqahGiven == true)
   }
 
   @Test
@@ -115,4 +153,53 @@ class NoorDatabaseTest {
     assertEquals("Relief & Perseverance", retrieved?.spiritualTheme)
     assertEquals("O Allah, replace every sorrow with Your enduring ease.", retrieved?.supplicationDua)
   }
+
+  @Test
+  fun insertAndUnlockBadgeInRoom() = runBlocking {
+    val badgeDao = database.badgeDao()
+    val badge = BadgeEntity(
+      badgeKey = "STREAK_7_DAY",
+      title = "7-Day Prayer Streak",
+      description = "Completed all 5 obligatory daily prayers for 7 consecutive days",
+      category = "STREAK",
+      iconName = "military_tech",
+      targetRequirement = 7,
+      currentProgress = 3,
+      isUnlocked = false
+    )
+
+    badgeDao.insertOrUpdate(badge)
+
+    val list = badgeDao.getAllBadges().first()
+    assertEquals(1, list.size)
+    assertEquals("7-Day Prayer Streak", list[0].title)
+    assertEquals(false, list[0].isUnlocked)
+
+    // Progress badge
+    badgeDao.updateProgress("STREAK_7_DAY", 7)
+    val afterProgress = badgeDao.getBadgeByKeyDirect("STREAK_7_DAY")
+    assertEquals(7, afterProgress?.currentProgress)
+
+    // Unlock badge
+    badgeDao.unlockBadge("STREAK_7_DAY", 1700000000000L)
+    val unlocked = badgeDao.getBadgeByKeyDirect("STREAK_7_DAY")
+    assertEquals(true, unlocked?.isUnlocked)
+    assertNotNull(unlocked?.unlockedAt)
+  }
+
+  @Test
+  fun testGlobalCityDirectorySearchAndNearest() {
+    val results = com.example.data.model.GlobalCityDirectory.searchCities("Cairo")
+    assertTrue(results.isNotEmpty())
+    assertEquals("Egypt", results[0].country)
+
+    // Check nearest city for London coordinates (51.50, -0.12)
+    val nearestLondon = com.example.data.model.GlobalCityDirectory.findNearestCity(51.50, -0.12)
+    assertEquals("London", nearestLondon.name)
+
+    // Check region filtering
+    val africaCities = com.example.data.model.GlobalCityDirectory.searchCities("", "Africa")
+    assertTrue(africaCities.size > 15)
+  }
 }
+

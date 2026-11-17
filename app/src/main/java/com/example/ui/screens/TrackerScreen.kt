@@ -3,6 +3,8 @@ package com.example.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,26 +28,40 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.platform.LocalContext
+import com.example.data.export.ReportExportManager
+import com.example.ui.components.RechartsWeeklyReportDashboard
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.example.ui.theme.EmeraldGreen
+import com.example.ui.theme.RadiantGold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +73,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.DailyLog
@@ -64,18 +81,31 @@ import com.example.data.model.PrayerName
 import com.example.ui.theme.RadiantGold
 import com.example.ui.theme.StarGold
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackerScreen(
   dailyLog: DailyLog,
   currentDateStr: String,
   onDateChange: (String) -> Unit,
   onUpdateLog: (DailyLog) -> Unit,
+  allLogs: List<DailyLog> = emptyList(),
+  cityName: String = "Mecca",
   modifier: Modifier = Modifier
 ) {
+  var showExportSheet by remember { mutableStateOf(false) }
+
   // Digital Tasbih state
   var tasbihCount by remember { mutableStateOf(0) }
   var tasbihPhraseIndex by remember { mutableStateOf(0) }
   val tasbihPhrases = listOf("SubhanAllah", "Alhamdulillah", "Allahu Akbar", "La ilaha illa Allah")
+
+  if (showExportSheet) {
+    ExportReportBottomSheet(
+      logs = if (allLogs.isNotEmpty()) allLogs else listOf(dailyLog),
+      cityName = cityName,
+      onDismiss = { showExportSheet = false }
+    )
+  }
 
   LazyColumn(
     modifier = modifier
@@ -96,13 +126,38 @@ fun TrackerScreen(
         onNextDay = {
           val next = adjustDate(currentDateStr, 1)
           onDateChange(next)
-        }
+        },
+        onExportClick = { showExportSheet = true }
+      )
+    }
+
+    item {
+      // Summary Dashboard: Recharts-style interactive bar charts for Prayer Consistency & Quran Completion
+      RechartsWeeklyReportDashboard(
+        weeklyLogs = if (allLogs.isNotEmpty()) allLogs else listOf(dailyLog),
+        modifier = Modifier.fillMaxWidth()
       )
     }
 
     item {
       // 5 Daily Prayers Checklist Card
       PrayersTrackerCard(
+        dailyLog = dailyLog,
+        onUpdateLog = onUpdateLog
+      )
+    }
+
+    item {
+      // Daily Adhkar (Remembrance) Tracker Card
+      DailyAdhkarTrackerCard(
+        dailyLog = dailyLog,
+        onUpdateLog = onUpdateLog
+      )
+    }
+
+    item {
+      // Dedicated High-Reward Sunnah & Nawafil Tracker Card
+      NawafilTrackerCard(
         dailyLog = dailyLog,
         onUpdateLog = onUpdateLog
       )
@@ -116,13 +171,6 @@ fun TrackerScreen(
       )
     }
 
-    item {
-      // Quran Reading Tracker Card
-      QuranTrackerCard(
-        dailyLog = dailyLog,
-        onUpdateLog = onUpdateLog
-      )
-    }
 
     item {
       // Digital Tasbih Counter Card
@@ -153,7 +201,8 @@ fun TrackerScreen(
 fun DateSelectorHeader(
   dateStr: String,
   onPreviousDay: () -> Unit,
-  onNextDay: () -> Unit
+  onNextDay: () -> Unit,
+  onExportClick: () -> Unit = {}
 ) {
   Surface(
     shape = RoundedCornerShape(16.dp),
@@ -164,7 +213,7 @@ fun DateSelectorHeader(
     Row(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 8.dp),
+        .padding(horizontal = 8.dp, vertical = 8.dp),
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
@@ -175,25 +224,40 @@ fun DateSelectorHeader(
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Day", tint = MaterialTheme.colorScheme.primary)
       }
 
-      Column(horizontalAlignment = Alignment.CenterHorizontally) {
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.weight(1f)
+      ) {
         Text(
           text = "Spiritual Obligations",
           style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
         )
         Text(
           text = dateStr,
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.primary
+          color = MaterialTheme.colorScheme.primary,
+          maxLines = 1,
+          softWrap = false
         )
       }
 
-      IconButton(
-        onClick = onNextDay,
-        modifier = Modifier.testTag("next_day_btn")
-      ) {
-        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Day", tint = MaterialTheme.colorScheme.primary)
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(
+          onClick = onExportClick,
+          modifier = Modifier.testTag("export_report_btn")
+        ) {
+          Icon(Icons.Default.Download, contentDescription = "Export Report", tint = MaterialTheme.colorScheme.primary)
+        }
+        IconButton(
+          onClick = onNextDay,
+          modifier = Modifier.testTag("next_day_btn")
+        ) {
+          Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Day", tint = MaterialTheme.colorScheme.primary)
+        }
       }
     }
   }
@@ -220,13 +284,19 @@ fun PrayersTrackerCard(
           text = "Daily Prayers (Salah)",
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.onSurface
+          color = MaterialTheme.colorScheme.onSurface,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+          modifier = Modifier.weight(1f)
         )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
-          text = "${dailyLog.completedPrayersCount}/5 Completed",
+          text = "${dailyLog.completedPrayersCount}/5 Done",
           style = MaterialTheme.typography.bodySmall,
           fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.primary
+          color = MaterialTheme.colorScheme.primary,
+          maxLines = 1,
+          softWrap = false
         )
       }
 
@@ -262,62 +332,242 @@ fun PrayersTrackerCard(
         checked = dailyLog.isha,
         onCheckedChange = { onUpdateLog(dailyLog.copy(isha = it)) }
       )
+    }
+  }
+}
+
+@Composable
+fun NawafilTrackerCard(
+  dailyLog: DailyLog,
+  onUpdateLog: (DailyLog) -> Unit
+) {
+  Card(
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    modifier = Modifier.fillMaxWidth().testTag("nawafil_tracker_card")
+  ) {
+    Column(modifier = Modifier.padding(18.dp)) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.weight(1f)
+        ) {
+          Box(
+            modifier = Modifier
+              .size(34.dp)
+              .clip(CircleShape)
+              .background(RadiantGold.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.AutoAwesome,
+              contentDescription = null,
+              tint = RadiantGold,
+              modifier = Modifier.size(18.dp)
+            )
+          }
+          Spacer(modifier = Modifier.width(10.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "Sunnah & Nawafil",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onSurface,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+            Text(
+              text = "Voluntary devotion & night vigil",
+              style = MaterialTheme.typography.labelSmall,
+              color = RadiantGold,
+              fontSize = 11.sp,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        val nawafilCompletedCount = (if (dailyLog.tahajjud) 1 else 0) +
+                                    (if (dailyLog.duha) 1 else 0) +
+                                    (if (dailyLog.witr) 1 else 0)
+        Surface(
+          shape = RoundedCornerShape(10.dp),
+          color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+          Text(
+            text = "$nawafilCompletedCount Active",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+          )
+        }
+      }
 
       Spacer(modifier = Modifier.height(14.dp))
 
-      // Sunnah & Nafl Prayers Counter
+      // 1. Tahajjud (Qiyam al-Layl)
+      NawafilCheckboxRow(
+        name = "Tahajjud (Qiyam al-Layl)",
+        arabic = "قيام الليل",
+        virtue = "The best prayer after obligatory prayers (Muslim)",
+        checked = dailyLog.tahajjud,
+        testTag = "tahajjud_checkbox_row",
+        onCheckedChange = { onUpdateLog(dailyLog.copy(tahajjud = it)) }
+      )
+
+      Spacer(modifier = Modifier.height(6.dp))
+
+      // 2. Salat al-Duha
+      NawafilCheckboxRow(
+        name = "Salat ad-Duha (Forenoon)",
+        arabic = "صلاة الضحى",
+        virtue = "Charity for each of your 360 bodily joints (Muslim)",
+        checked = dailyLog.duha,
+        testTag = "duha_checkbox_row",
+        onCheckedChange = { onUpdateLog(dailyLog.copy(duha = it)) }
+      )
+
+      Spacer(modifier = Modifier.height(6.dp))
+
+      // 3. Salat al-Witr
+      NawafilCheckboxRow(
+        name = "Salat al-Witr (Night Seal)",
+        arabic = "صلاة الوتر",
+        virtue = "Allah is Witr (One) and loves the Witr (Tirmidhi)",
+        checked = dailyLog.witr,
+        testTag = "witr_checkbox_row",
+        onCheckedChange = { onUpdateLog(dailyLog.copy(witr = it)) }
+      )
+
+      Spacer(modifier = Modifier.height(10.dp))
+
+      // 4. 12 Sunnah Rawatib Tracker
       Row(
         modifier = Modifier
           .fillMaxWidth()
           .clip(RoundedCornerShape(12.dp))
-          .background(MaterialTheme.colorScheme.surfaceVariant)
-          .padding(horizontal = 14.dp, vertical = 10.dp),
+          .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+          .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
           Text(
-            text = "Sunnah & Voluntary Rak'ahs",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold
+            text = "12 Sunnah Rawatib",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold
           )
           Text(
-            text = "e.g. Rawatib, Duha, Witr",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = "2 Fajr • 4+2 Dhuhr • 2 Maghrib • 2 Isha",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.outline,
+            fontSize = 10.sp
+          )
+          Text(
+            text = "\"A house will be built in Jannah\" (Muslim)",
+            style = MaterialTheme.typography.labelSmall,
+            color = RadiantGold,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Medium
           )
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
           IconButton(
             onClick = {
-              if (dailyLog.sunnahPrayers > 0) {
-                onUpdateLog(dailyLog.copy(sunnahPrayers = dailyLog.sunnahPrayers - 2))
+              if (dailyLog.rawatibCount > 0) {
+                onUpdateLog(dailyLog.copy(rawatibCount = dailyLog.rawatibCount - 2))
               }
             },
-            modifier = Modifier.size(32.dp).testTag("decrease_sunnah_btn")
+            modifier = Modifier.size(32.dp).testTag("decrease_rawatib_btn")
           ) {
-            Icon(Icons.Default.Remove, contentDescription = "Decrease Sunnah", modifier = Modifier.size(16.dp))
+            Icon(Icons.Default.Remove, contentDescription = "Decrease Rawatib", modifier = Modifier.size(16.dp))
           }
 
           Text(
-            text = "${dailyLog.sunnahPrayers}",
-            style = MaterialTheme.typography.titleMedium,
+            text = "${dailyLog.rawatibCount}/12",
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 6.dp).testTag("rawatib_count_text")
           )
 
           IconButton(
             onClick = {
-              onUpdateLog(dailyLog.copy(sunnahPrayers = dailyLog.sunnahPrayers + 2))
+              if (dailyLog.rawatibCount < 12) {
+                onUpdateLog(dailyLog.copy(rawatibCount = dailyLog.rawatibCount + 2))
+              }
             },
-            modifier = Modifier.size(32.dp).testTag("increase_sunnah_btn")
+            modifier = Modifier.size(32.dp).testTag("increase_rawatib_btn")
           ) {
-            Icon(Icons.Default.Add, contentDescription = "Increase Sunnah", modifier = Modifier.size(16.dp))
+            Icon(Icons.Default.Add, contentDescription = "Increase Rawatib", modifier = Modifier.size(16.dp))
           }
         }
       }
     }
+  }
+}
+
+@Composable
+private fun NawafilCheckboxRow(
+  name: String,
+  arabic: String,
+  virtue: String,
+  checked: Boolean,
+  testTag: String = "nawafil_row",
+  onCheckedChange: (Boolean) -> Unit
+) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(12.dp))
+      .clickable { onCheckedChange(!checked) }
+      .background(if (checked) EmeraldGreen.copy(alpha = 0.08f) else Color.Transparent)
+      .padding(vertical = 8.dp, horizontal = 6.dp)
+      .testTag(testTag),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+      Checkbox(
+        checked = checked,
+        onCheckedChange = null,
+        colors = CheckboxDefaults.colors(
+          checkedColor = EmeraldGreen,
+          checkmarkColor = Color.White
+        )
+      )
+      Spacer(modifier = Modifier.width(6.dp))
+      Column {
+        Text(
+          text = name,
+          style = MaterialTheme.typography.bodyMedium,
+          fontWeight = FontWeight.SemiBold
+        )
+        Text(
+          text = virtue,
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.outline,
+          fontSize = 10.sp
+        )
+      }
+    }
+
+    Text(
+      text = arabic,
+      style = MaterialTheme.typography.bodyMedium,
+      fontWeight = FontWeight.Bold,
+      color = if (checked) EmeraldGreen else MaterialTheme.colorScheme.outline
+    )
   }
 }
 
@@ -337,10 +587,10 @@ private fun PrayerCheckboxRow(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
       Checkbox(
         checked = checked,
-        onCheckedChange = onCheckedChange,
+        onCheckedChange = null,
         colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
       )
       Spacer(modifier = Modifier.width(6.dp))
@@ -348,14 +598,20 @@ private fun PrayerCheckboxRow(
         text = name,
         style = MaterialTheme.typography.bodyMedium,
         fontWeight = if (checked) FontWeight.Bold else FontWeight.Normal,
-        color = MaterialTheme.colorScheme.onSurface
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
       )
     }
+
+    Spacer(modifier = Modifier.width(8.dp))
 
     Text(
       text = arabic,
       style = MaterialTheme.typography.bodySmall,
-      color = MaterialTheme.colorScheme.outline
+      color = MaterialTheme.colorScheme.outline,
+      maxLines = 1,
+      softWrap = false
     )
   }
 }
@@ -379,16 +635,20 @@ fun FastingTrackerCard(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
           Text(
             text = "Fasting Tracker (Sawm)",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
           )
           Text(
             text = if (dailyLog.isFasting) "Fasting Logged • May Allah accept" else "Not fasting today",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
           )
         }
 
@@ -413,11 +673,13 @@ fun FastingTrackerCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
+        @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+        androidx.compose.foundation.layout.FlowRow(
           modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(6.dp)
+          horizontalArrangement = Arrangement.spacedBy(6.dp),
+          verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-          fastingTypes.take(3).forEach { type ->
+          fastingTypes.forEach { type ->
             FilterChip(
               selected = dailyLog.fastingType == type,
               onClick = { onUpdateLog(dailyLog.copy(fastingType = type)) },
@@ -429,112 +691,6 @@ fun FastingTrackerCard(
             )
           }
         }
-      }
-    }
-  }
-}
-
-@Composable
-fun QuranTrackerCard(
-  dailyLog: DailyLog,
-  onUpdateLog: (DailyLog) -> Unit
-) {
-  var surahInput by remember(dailyLog.lastSurah) { mutableStateOf(dailyLog.lastSurah) }
-  var ayahInput by remember(dailyLog.lastAyah) { mutableStateOf(dailyLog.lastAyah.toString()) }
-
-  Card(
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-    modifier = Modifier.fillMaxWidth().testTag("quran_tracker_card")
-  ) {
-    Column(modifier = Modifier.padding(18.dp)) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Column {
-          Text(
-            text = "Quran Recitation (Tilawah)",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-          )
-          Text(
-            text = "${dailyLog.quranPagesRead} pages recited today",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold
-          )
-        }
-
-        Box(
-          modifier = Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-          contentAlignment = Alignment.Center
-        ) {
-          Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        }
-      }
-
-      Spacer(modifier = Modifier.height(14.dp))
-
-      Text(
-        text = "Quick Add Pages:",
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-
-      Spacer(modifier = Modifier.height(8.dp))
-
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        listOf(1, 2, 5, 10).forEach { pages ->
-          Button(
-            onClick = {
-              onUpdateLog(dailyLog.copy(quranPagesRead = dailyLog.quranPagesRead + pages))
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.weight(1f).testTag("add_${pages}_pages_btn")
-          ) {
-            Text("+$pages", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
-          }
-        }
-      }
-
-      Spacer(modifier = Modifier.height(14.dp))
-
-      // Current Surah & Ayah Bookmark
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        OutlinedTextField(
-          value = surahInput,
-          onValueChange = {
-            surahInput = it
-            onUpdateLog(dailyLog.copy(lastSurah = it))
-          },
-          label = { Text("Surah Bookmark") },
-          modifier = Modifier.weight(2f).testTag("surah_bookmark_input")
-        )
-
-        OutlinedTextField(
-          value = ayahInput,
-          onValueChange = {
-            ayahInput = it
-            val ayahNum = it.toIntOrNull() ?: 1
-            onUpdateLog(dailyLog.copy(lastAyah = ayahNum))
-          },
-          label = { Text("Ayah") },
-          modifier = Modifier.weight(1f).testTag("ayah_bookmark_input")
-        )
       }
     }
   }
@@ -640,4 +796,329 @@ private fun adjustDate(dateStr: String, dayOffset: Int): String {
     // fallback
   }
   return dateStr
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExportReportBottomSheet(
+  logs: List<DailyLog>,
+  cityName: String,
+  onDismiss: () -> Unit
+) {
+  val context = LocalContext.current
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+  ModalBottomSheet(
+    onDismissRequest = onDismiss,
+    sheetState = sheetState,
+    containerColor = MaterialTheme.colorScheme.surface
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .verticalScroll(rememberScrollState())
+        .padding(horizontal = 20.dp, vertical = 16.dp)
+        .testTag("export_sheet_modal")
+    ) {
+      Text(
+        text = "Weekly Report & Spiritual Insights",
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold
+      )
+      Text(
+        text = "Interactive summary dashboard of your prayer consistency and Quran progress (${logs.size} logged days)",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      // Recharts Interactive Bar Chart Summary Dashboard
+      RechartsWeeklyReportDashboard(
+        weeklyLogs = logs,
+        modifier = Modifier.fillMaxWidth()
+      )
+
+      Spacer(modifier = Modifier.height(20.dp))
+
+      Text(
+        text = "Export Documents",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold
+      )
+      Text(
+        text = "Save or share full records for spreadsheet and PDF archiving",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+
+      Spacer(modifier = Modifier.height(12.dp))
+
+      // Option 1: CSV / Excel Export
+      Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier
+          .fillMaxWidth()
+          .clickable {
+            val file = ReportExportManager.generateCsvReport(context, logs)
+            ReportExportManager.saveToDownloads(context, file)
+            ReportExportManager.shareReportFile(context, file, "text/csv")
+            onDismiss()
+          }
+          .testTag("export_csv_btn")
+      ) {
+        Row(
+          modifier = Modifier.padding(16.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Box(
+            modifier = Modifier
+              .size(44.dp)
+              .clip(CircleShape)
+              .background(EmeraldGreen.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(Icons.Default.TableChart, contentDescription = null, tint = EmeraldGreen)
+          }
+          Spacer(modifier = Modifier.width(14.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "CSV Spreadsheet (Excel / Google Sheets)",
+              style = MaterialTheme.typography.titleSmall,
+              fontWeight = FontWeight.Bold
+            )
+            Text(
+              text = "All logged prayers, fasting, nawafil & Quran pages in raw data",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+          Icon(Icons.Default.Download, contentDescription = null, tint = EmeraldGreen)
+        }
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
+
+      // Option 2: PDF Document Export
+      Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier
+          .fillMaxWidth()
+          .clickable {
+            val file = ReportExportManager.generatePdfReport(context, logs, userCity = cityName)
+            ReportExportManager.saveToDownloads(context, file)
+            ReportExportManager.shareReportFile(context, file, "application/pdf")
+            onDismiss()
+          }
+          .testTag("export_pdf_btn")
+      ) {
+        Row(
+          modifier = Modifier.padding(16.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Box(
+            modifier = Modifier
+              .size(44.dp)
+              .clip(CircleShape)
+              .background(RadiantGold.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = RadiantGold)
+          }
+          Spacer(modifier = Modifier.width(14.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "Printable PDF Document",
+              style = MaterialTheme.typography.titleSmall,
+              fontWeight = FontWeight.Bold
+            )
+            Text(
+              text = "Official summary document with completion percentages & tables",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+          Icon(Icons.Default.Download, contentDescription = null, tint = RadiantGold)
+        }
+      }
+
+      Spacer(modifier = Modifier.height(24.dp))
+    }
+  }
+}
+
+@Composable
+fun DailyAdhkarTrackerCard(
+  dailyLog: DailyLog,
+  onUpdateLog: (DailyLog) -> Unit
+) {
+  Card(
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    modifier = Modifier.fillMaxWidth().testTag("adhkar_tracker_card")
+  ) {
+    Column(modifier = Modifier.padding(18.dp)) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.weight(1f)
+        ) {
+          Box(
+            modifier = Modifier
+              .size(34.dp)
+              .clip(CircleShape)
+              .background(EmeraldGreen.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.CheckCircle,
+              contentDescription = null,
+              tint = EmeraldGreen,
+              modifier = Modifier.size(18.dp)
+            )
+          }
+          Spacer(modifier = Modifier.width(10.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "Daily Adhkar",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.Bold,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+            Text(
+              text = "Fortress of the Muslim • أذكار اليوم",
+              style = MaterialTheme.typography.labelSmall,
+              color = EmeraldGreen,
+              fontWeight = FontWeight.SemiBold,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        val completedCount = (if (dailyLog.morningAdhkar) 1 else 0) + (if (dailyLog.eveningAdhkar) 1 else 0)
+        Surface(
+          shape = RoundedCornerShape(8.dp),
+          color = if (completedCount == 2) EmeraldGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
+        ) {
+          Text(
+            text = "$completedCount / 2 Done",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (completedCount == 2) EmeraldGreen else MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      // 1. Morning Adhkar Item
+      AdhkarCheckItem(
+        title = "Morning Adhkar",
+        arabicTitle = "أذكار الصباح",
+        description = "Recited after Fajr until sunrise for divine protection",
+        isChecked = dailyLog.morningAdhkar,
+        accentColor = RadiantGold,
+        testTag = "morning_adhkar_checkbox",
+        onToggle = {
+          onUpdateLog(dailyLog.copy(morningAdhkar = !dailyLog.morningAdhkar))
+        }
+      )
+
+      Spacer(modifier = Modifier.height(10.dp))
+
+      // 2. Evening Adhkar Item
+      AdhkarCheckItem(
+        title = "Evening Adhkar",
+        arabicTitle = "أذكار المساء",
+        description = "Recited after Asr until sunset for night defense",
+        isChecked = dailyLog.eveningAdhkar,
+        accentColor = EmeraldGreen,
+        testTag = "evening_adhkar_checkbox",
+        onToggle = {
+          onUpdateLog(dailyLog.copy(eveningAdhkar = !dailyLog.eveningAdhkar))
+        }
+      )
+    }
+  }
+}
+
+@Composable
+fun AdhkarCheckItem(
+  title: String,
+  arabicTitle: String,
+  description: String,
+  isChecked: Boolean,
+  accentColor: Color,
+  testTag: String,
+  onToggle: () -> Unit
+) {
+  Surface(
+    shape = RoundedCornerShape(14.dp),
+    color = if (isChecked) accentColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(14.dp))
+      .clickable(onClick = onToggle)
+      .testTag(testTag)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 14.dp, vertical = 12.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.weight(1f)
+      ) {
+        Checkbox(
+          checked = isChecked,
+          onCheckedChange = null,
+          colors = CheckboxDefaults.colors(
+            checkedColor = accentColor,
+            checkmarkColor = Color.White
+          )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = title,
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+              text = arabicTitle,
+              style = MaterialTheme.typography.labelSmall,
+              color = accentColor,
+              fontWeight = FontWeight.Bold
+            )
+          }
+          Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 11.sp
+          )
+        }
+      }
+    }
+  }
 }

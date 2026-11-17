@@ -30,8 +30,14 @@ abstract class FirestoreEmulatorTestBase {
   protected lateinit var auth: FirebaseAuth
   protected lateinit var databaseId: String
 
+  protected fun isFirestoreInitialized(): Boolean = ::firestore.isInitialized
+
   @Before
   open fun setUpFirebase() {
+    org.junit.Assume.assumeTrue(
+      "Firebase Auth/Firestore emulator is not running on $EMULATOR_HOST:$AUTH_PORT",
+      isEmulatorRunning()
+    )
     val context = ApplicationProvider.getApplicationContext<Context>()
     val resId = context.resources.getIdentifier("firestore_database_id", "string", context.packageName)
     databaseId = if (resId != 0) context.getString(resId) else "demo-database"
@@ -64,7 +70,9 @@ abstract class FirestoreEmulatorTestBase {
 
   @After
   open fun tearDownFirebase() {
-    auth.signOut()
+    if (::auth.isInitialized) {
+      auth.signOut()
+    }
   }
 
   // Local unit test helper ONLY (under app/src/test/).
@@ -86,6 +94,17 @@ abstract class FirestoreEmulatorTestBase {
       current = current.cause
     }
     return null
+  }
+
+  private fun isEmulatorRunning(): Boolean {
+    return try {
+      java.net.Socket().use { socket ->
+        socket.connect(java.net.InetSocketAddress(EMULATOR_HOST, AUTH_PORT), 400)
+        true
+      }
+    } catch (_: Exception) {
+      false
+    }
   }
 
   private companion object {

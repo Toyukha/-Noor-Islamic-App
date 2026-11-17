@@ -18,12 +18,21 @@ data class DailyLog(
   val maghrib: Boolean = false,
   val isha: Boolean = false,
   val sunnahPrayers: Int = 0,
+  val tahajjud: Boolean = false,
+  val duha: Boolean = false,
+  val witr: Boolean = false,
+  val rawatibCount: Int = 0,
   @get:PropertyName("isFasting") val isFasting: Boolean = false,
   val fastingType: String = "Sunnah", // Ramadan, Sunnah, White Days, Voluntary, Qada
   val quranPagesRead: Int = 0,
   val quranMinutes: Int = 0,
   val lastSurah: String = "Al-Fatihah",
   val lastAyah: Int = 1,
+  val morningAdhkar: Boolean = false,
+  val eveningAdhkar: Boolean = false,
+  val taraweehRakats: Int = 0,
+  val laylatAlQadrVigil: Boolean = false,
+  val sadaqahGiven: Boolean = false,
   @ServerTimestamp val createdAt: Timestamp? = null,
   @ServerTimestamp val updatedAt: Timestamp? = null
 ) {

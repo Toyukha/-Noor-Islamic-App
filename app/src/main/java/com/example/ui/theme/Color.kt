@@ -51,3 +51,6 @@ val RadiantGold = Color(0xFFD4AF37)
 val StarGold = Color(0xFFFCD34D)
 val DeepEvergreen = Color(0xFF072B1D)
 val CardHighlight = Color(0xFF204834)
+val EmeraldGreen = Color(0xFF10B981)
+val EmeraldDark = Color(0xFF041C14)
+

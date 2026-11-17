@@ -20,7 +20,8 @@ data class SinglePrayerTime(
 data class DayPrayerSchedule(
   val dateFormatted: String, // e.g. "Monday, 26 Oct 2026"
   val hijriFormatted: String, // e.g. "15 Jumada al-Awwal 1448"
-  val prayers: List<SinglePrayerTime>,
+  val prayers: List<SinglePrayerTime>, // Strictly 5 obligatory prayers: Fajr, Dhuhr, Asr, Maghrib, Isha
+  val sunriseTime: SinglePrayerTime? = null,
   val nextPrayer: SinglePrayerTime?,
   val timeUntilNextFormatted: String // e.g. "2h 15m"
 )
@@ -30,7 +31,8 @@ data class CityLocation(
   val country: String,
   val latitude: Double,
   val longitude: Double,
-  val timezoneOffset: Double
+  val timezoneOffset: Double,
+  val region: String = ""
 )
 
 enum class CalculationMethod(val displayName: String, val fajrAngle: Double, val ishaAngle: Double) {

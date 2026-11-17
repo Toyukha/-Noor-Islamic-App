@@ -11,11 +11,17 @@ import org.junit.Test
 
 class NoorRepositoryRuleTest : FirestoreEmulatorTestBase() {
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun unauthenticatedUser_failsAccess() = runBlocking {
-    val repository = NoorRepository(firestore)
-    auth.signOut()
-    repository.saveDailyLog(DailyLog(id = "2026-10-26", date = "2026-10-26"))
+    var caught = false
+    try {
+      val repository = NoorRepository(firestore)
+      auth.signOut()
+      repository.saveDailyLog(DailyLog(id = "2026-10-26", date = "2026-10-26"))
+    } catch (_: IllegalStateException) {
+      caught = true
+    }
+    assertTrue("Expected IllegalStateException for unauthenticated user", caught)
   }
 
   @Test
@@ -34,7 +40,9 @@ class NoorRepositoryRuleTest : FirestoreEmulatorTestBase() {
       isha = true,
       isFasting = true,
       fastingType = "Sunnah",
-      quranPagesRead = 5
+      quranPagesRead = 5,
+      morningAdhkar = true,
+      eveningAdhkar = true
     )
 
     repository.saveDailyLog(log)
@@ -44,6 +52,8 @@ class NoorRepositoryRuleTest : FirestoreEmulatorTestBase() {
     assertTrue(savedLog.fajr)
     assertTrue(savedLog.isFasting)
     assertEquals(5, savedLog.quranPagesRead)
+    assertTrue(savedLog.morningAdhkar)
+    assertTrue(savedLog.eveningAdhkar)
   }
 
   @Test

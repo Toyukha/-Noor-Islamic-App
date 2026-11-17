@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Noor Islamic Companion</title>
+  <meta name="description" content="Official Privacy Policy and Google Play Data Safety disclosure for Noor (com.aistudio.noorislamic.zpqtwv)." />
+  <style>
+    :root {
+      --emerald-deep: #033624;
+      --emerald-primary: #044B32;
+      --emerald-mid: #0E5338;
+      --emerald-tint: #E9F5EE;
+      --gold: #D4AF37;
+      --gold-soft: #FBE8A6;
+      --bg: #F5FAF7;
+      --card: #FFFFFF;
+      --text: #16221C;
+      --text-muted: #495A51;
+      --border: #D7E5DD;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0D1612;
+        --card: #14221B;
+        --text: #E6EFEA;
+        --text-muted: #A9BCB2;
+        --border: #24392E;
+        --emerald-tint: #193226;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--emerald-deep) 0%, var(--emerald-primary) 55%, var(--emerald-mid) 100%);
+      color: #FFFFFF;
+      padding: 44px 20px 38px;
+      border-bottom: 3px solid var(--gold);
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.16);
+      border: 1px solid rgba(212, 175, 55, 0.55);
+      color: var(--gold-soft);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4vw, 34px);
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.88);
+      max-width: 680px;
+      font-size: 15px;
+    }
+
+    .meta-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 13px;
+    }
+
+    .meta-item strong {
+      display: block;
+      color: var(--gold-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+
+    main {
+      padding: 28px 20px 56px;
+    }
+
+    .toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+    }
+
+    .toc h2 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--emerald-mid);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .toc h2 {
+        color: var(--gold-soft);
+      }
+    }
+
+    .toc-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font-size: 14px;
+    }
+
+    .toc-links a {
+      color: var(--emerald-mid);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .toc-links a {
+        color: #7EE0B0;
+      }
+    }
+
+    .toc-links a:hover {
+      text-decoration: underline;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 10px rgba(4, 75, 50, 0.04);
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 19px;
+      color: var(--emerald-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .card h2 {
+        color: #7EE0B0;
+      }
+    }
+
+    .card p {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .card ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .card li {
+      margin-bottom: 8px;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .card li:last-child {
+      margin-bottom: 0;
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+
+    .highlight-box {
+      background: var(--emerald-tint);
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .perm-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .perm-table th,
+    .perm-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .perm-table th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12.5px;
+      background: var(--emerald-tint);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
+    a {
+      color: var(--emerald-mid);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      a {
+        color: #7EE0B0;
+      }
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 18px;
+      }
+      .perm-table th:first-child,
+      .perm-table td:first-child {
+        width: 42%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <div class="badge-row">
+        <span class="badge">Zero Advertisements</span>
+        <span class="badge">Zero Ad Trackers</span>
+        <span class="badge">Local-First Design</span>
+      </div>
+      <h1>Noor Privacy Policy</h1>
+      <p>Transparency notice and Google Play Data Safety disclosure for the Noor Islamic Companion Android application.</p>
+      <div class="meta-strip">
+        <div class="meta-item">
+          <strong>Application</strong>
+          Noor (Android)
+        </div>
+        <div class="meta-item">
+          <strong>Package ID</strong>
+          com.aistudio.noorislamic.zpqtwv
+        </div>
+        <div class="meta-item">
+          <strong>Effective Date</strong>
+          November 15, 2026
+        </div>
+        <div class="meta-item">
+          <strong>Developer Contact</strong>
+          oyeyemiyunus24@gmail.com
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="toc" aria-label="Privacy Policy Sections">
+      <h2>Contents</h2>
+      <div class="toc-links">
+        <a href="#overview">1. Overview</a>
+        <a href="#data-collected">2. Data We Collect</a>
+        <a href="#permissions">3. App Permissions</a>
+        <a href="#local-storage">4. Offline & Local Storage</a>
+        <a href="#third-party">5. Third-Party Services</a>
+        <a href="#donations">6. External Donations</a>
+        <a href="#children">7. Children's Privacy</a>
+        <a href="#deletion">8. Data Retention & Deletion</a>
+        <a href="#contact">9. Contact Us</a>
+      </div>
+    </nav>
+
+    <section id="overview" class="card">
+      <h2>1. Overview & Privacy Commitment</h2>
+      <p>
+        Noor (<strong>com.aistudio.noorislamic.zpqtwv</strong>) is built as a reverent, ad-free Islamic companion for daily Salah tracking, prayer time calculation, offline Quran reading, Adhkar remembrance, and Ramadan worship goals.
+      </p>
+      <p>
+        We do <strong>not</strong> display third-party advertisements, we do <strong>not</strong> include advertising trackers, and we never sell, rent, or trade your personal data.
+      </p>
+      <div class="highlight-box">
+        Core features—including the complete 604-page offline Uthmani Mushaf, Makkah/Fajr Adhan audio, Surah Al-Kahf, Surah Al-Mulk, Surah Al-Waqi'ah, and local prayer schedules—work without tracking your reading habits across external websites or apps.
+      </div>
+    </section>
+
+    <section id="data-collected" class="card">
+      <h2>2. Information We Process & Collect</h2>
+      <ul>
+        <li>
+          <strong>Optional Google Sign-In Account Information:</strong> If you choose to sign in with Google via Android Credential Manager and Firebase Authentication, Noor receives your basic authentication identifier (Firebase UID), display name, and email address strictly to authenticate your session and sync your worship progress.
+        </li>
+        <li>
+          <strong>User-Authored Worship Logs & Preferences:</strong> When signed in, your selected city, prayer calculation method, prayer completion records, Quran Khatm progress, and earned achievement badges may be synced to Google Cloud Firestore so your progress can be restored across sessions.
+        </li>
+        <li>
+          <strong>Optional Device Location (GPS):</strong> If you tap <em>Auto-Detect My City via GPS</em>, Noor requests your coarse or fine location once to resolve your nearest city and coordinates for accurate Salah and Qibla/astronomical prayer timings. Location is never used for advertising or background behavioral profiling.
+        </li>
+      </ul>
+    </section>
+
+    <section id="permissions" class="card">
+      <h2>3. Android Permissions & Why Noor Requests Them</h2>
+      <p class="muted">Every permission declared in Noor's AndroidManifest serves a specific spiritual or functional feature inside the app:</p>
+      <table class="perm-table">
+        <thead>
+          <tr>
+            <th>Permission</th>
+            <th>Purpose in Noor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ACCESS_COARSE_LOCATION</code><br/><code>ACCESS_FINE_LOCATION</code></td>
+            <td>Optional; requested only when you tap GPS city detection to set accurate local Salah timings. You can alternatively select from 150+ cities manually without granting location.</td>
+          </tr>
+          <tr>
+            <td><code>INTERNET</code></td>
+            <td>Used for optional Google Sign-In, Firebase Cloud Firestore sync, and opening external donation or web policy links when tapped.</td>
+          </tr>
+          <tr>
+            <td><code>POST_NOTIFICATIONS</code><br/><code>SCHEDULE_EXACT_ALARM</code><br/><code>RECEIVE_BOOT_COMPLETED</code><br/><code>WAKE_LOCK</code> / <code>VIBRATE</code></td>
+            <td>Schedules timely on-device Salah, Suhoor/Iftar, Friday Surah Al-Kahf, Nightly Surah, Adhkar, and Khatm reminders, and restores schedules after a device restart.</td>
+          </tr>
+          <tr>
+            <td><code>FOREGROUND_SERVICE</code><br/><code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code></td>
+            <td>Plays bundled offline Adhan and Surah audio cleanly in the background with media playback controls.</td>
+          </tr>
+          <tr>
+            <td><code>SYSTEM_ALERT_WINDOW</code></td>
+            <td>Optional Android "Appear on Top" permission enabled only if you opt into centered floating reminder cards when prayer/Adhkar alarms trigger.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="local-storage" class="card">
+      <h2>4. Offline & On-Device Storage</h2>
+      <p>
+        Noor stores the majority of your private worship data directly on your device using Android Room (SQLite) and local app preferences:
+      </p>
+      <ul>
+        <li>Daily obligatory and voluntary prayer logs, fasting records, and streak counts.</li>
+        <li>Your Tadabbur personal reflections, Quran reader bookmarks, Day/Night Mushaf display toggle, and Khatm pacing settings.</li>
+        <li>Local PDF/CSV progress reports you choose to export and share using the Android system share sheet.</li>
+      </ul>
+    </section>
+
+    <section id="third-party" class="card">
+      <h2>5. Third-Party Infrastructure Providers</h2>
+      <p>
+        Noor relies strictly on <strong>Google Firebase (Firebase Authentication and Cloud Firestore)</strong> to provide optional Google Sign-In and secure cloud backup/sync of your account settings and worship records. Data transmitted to Firebase is encrypted in transit via HTTPS/TLS.
+      </p>
+      <p>
+        Noor does <strong>not</strong> integrate advertising networks, behavioral analytics brokers, or third-party social tracking SDKs.
+      </p>
+    </section>
+
+    <section id="donations" class="card">
+      <h2>6. Voluntary Sadaqah & External Payment Links</h2>
+      <p>
+        Noor is free and maintained through voluntary community support (Sadaqah Jariyah). When you tap the donation button in Settings, Noor opens the external Flutterwave payment page (<code>flutterwave.com/donate/udnd7pfu6sbt</code>) in your device's web browser.
+      </p>
+      <p>
+        Noor never collects, processes, views, or stores debit/credit card numbers, bank account credentials, or payment receipts. Any voluntary payment is handled solely by Flutterwave under Flutterwave's own privacy and security policies.
+      </p>
+    </section>
+
+    <section id="children" class="card">
+      <h2>7. Children's Privacy</h2>
+      <p>
+        Noor is designed for a general audience and does not knowingly collect personal information from children under 13 (or the applicable age of digital consent in your jurisdiction) without parental consent. If you believe a child has created a cloud account without authorization, please contact us so we can promptly delete the record.
+      </p>
+    </section>
+
+    <section id="deletion" class="card">
+      <h2>8. Data Retention & Account Deletion</h2>
+      <p>You stay in full control of your information and can delete your data at any time:</p>
+      <ul>
+        <li>
+          <strong>On-Device Data:</strong> Open your device's <em>Android Settings → Apps → Noor → Storage → Clear Data</em>, or uninstall the app, to permanently remove all local Room records and preferences.
+        </li>
+        <li>
+          <strong>Cloud Account & Firestore Data Deletion:</strong> To permanently delete your Firebase Authentication record and synced Firestore documents without using the app, email <a href="mailto:oyeyemiyunus24@gmail.com?subject=Noor%20Data%20Deletion%20Request">oyeyemiyunus24@gmail.com</a> from (or specifying) the Google account email associated with Noor. Verified deletion requests are completed within 7 business days.
+        </li>
+      </ul>
+    </section>
+
+    <section id="contact" class="card">
+      <h2>9. Changes & Developer Contact</h2>
+      <p>
+        We may update this Privacy Policy from time to time to reflect new features or legal requirements. Any updates will be published on this page and mirrored inside the Noor app under <strong>Settings → About Noor → Privacy Policy</strong> with an updated effective date.
+      </p>
+      <p>
+        If you have any questions, privacy requests, or feedback, please contact the developer directly:
+      </p>
+      <p>
+        <strong>Email:</strong> <a href="mailto:oyeyemiyunus24@gmail.com">oyeyemiyunus24@gmail.com</a>
+      </p>
+    </section>
+
+    <footer class="footer">
+      © 2026 Noor Islamic Companion • Package: com.aistudio.noorislamic.zpqtwv • <a href="./index.html">Back to Noor Home</a>
+    </footer>
+  </main>
+</body>
+</html>

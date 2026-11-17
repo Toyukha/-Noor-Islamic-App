@@ -16,25 +16,10 @@ import kotlin.math.tan
 
 object PrayerCalculationEngine {
 
-  val PRESET_CITIES = listOf(
-    CityLocation("Mecca", "Saudi Arabia", 21.4225, 39.8262, 3.0),
-    CityLocation("Medina", "Saudi Arabia", 24.4672, 39.6111, 3.0),
-    CityLocation("Cairo", "Egypt", 30.0444, 31.2357, 2.0),
-    CityLocation("Istanbul", "Turkey", 41.0082, 28.9784, 3.0),
-    CityLocation("Dubai", "UAE", 25.2048, 55.2708, 4.0),
-    CityLocation("Karachi", "Pakistan", 24.8607, 67.0011, 5.0),
-    CityLocation("Jakarta", "Indonesia", -6.2088, 106.8456, 7.0),
-    CityLocation("Kuala Lumpur", "Malaysia", 3.1390, 101.6869, 8.0),
-    CityLocation("London", "United Kingdom", 51.5074, -0.1278, 0.0),
-    CityLocation("New York", "United States", 40.7128, -74.0060, -5.0),
-    CityLocation("Toronto", "Canada", 43.6532, -79.3832, -5.0),
-    CityLocation("Lagos", "Nigeria", 6.5244, 3.3792, 1.0),
-    CityLocation("Paris", "France", 48.8566, 2.3522, 1.0)
-  )
+  val PRESET_CITIES = com.example.data.model.GlobalCityDirectory.ALL_CITIES
 
   fun getCityByName(name: String): CityLocation {
-    return PRESET_CITIES.firstOrNull { it.name.equals(name, ignoreCase = true) }
-      ?: PRESET_CITIES[0] // Default to Mecca
+    return com.example.data.model.GlobalCityDirectory.getCityByName(name)
   }
 
   fun getMethodByName(name: String): CalculationMethod {
@@ -93,16 +78,16 @@ object PrayerCalculationEngine {
       dhuhrHours + sunHourAngle(declination, city.latitude, method.ishaAngle, isSunBelow = true)
     }
 
+    val sunrisePrayer = toPrayerTime(PrayerName.SUNRISE, sunriseHours)
     val prayersList = listOf(
       toPrayerTime(PrayerName.FAJR, fajrHours),
-      toPrayerTime(PrayerName.SUNRISE, sunriseHours),
       toPrayerTime(PrayerName.DHUHR, dhuhrHours),
       toPrayerTime(PrayerName.ASR, asrHours),
       toPrayerTime(PrayerName.MAGHRIB, maghribHours),
       toPrayerTime(PrayerName.ISHA, ishaHours)
     )
 
-    // Determine Next Prayer
+    // Determine Next Prayer among the 5 obligatory prayers
     val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
     val currentMin = calendar.get(Calendar.MINUTE)
     val currentTotalMins = currentHour * 60 + currentMin
@@ -129,6 +114,7 @@ object PrayerCalculationEngine {
       dateFormatted = dateFormatted,
       hijriFormatted = hijriFormatted,
       prayers = prayersList,
+      sunriseTime = sunrisePrayer,
       nextPrayer = nextPrayer,
       timeUntilNextFormatted = timeUntilNextFormatted
     )
